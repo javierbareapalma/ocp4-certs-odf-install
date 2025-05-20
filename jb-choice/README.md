@@ -22,3 +22,8 @@ Create CR Certificate for ns openshift-ingress.
 
 # 4.
 
+```bash
+cd bookimport-app
+
+oc apply -f operator-cert-manager-declaration.yaml
+```

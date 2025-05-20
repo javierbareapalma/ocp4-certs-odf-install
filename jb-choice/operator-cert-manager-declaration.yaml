@@ -6,7 +6,7 @@ metadata:
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
-  name: cert-manager-operator-operator-group
+  name: cert-manager-operator-group
   namespace: cert-manager-operator
 spec:
 spec:  

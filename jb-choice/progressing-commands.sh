@@ -49,7 +49,8 @@ arnpolicytoapply=$(aws iam list-policies --query 'Policies[?PolicyName==`AllowDN
 
 aws iam attach-user-policy --policy-arn $arnpolicytoapply --user-name route53-openshift
 
-rm secretos-iam-user-route53-openshift
+echo "deleting 'secretos-iam-user-route53-openshift' file"
+rm secretos-iam-user-route53-openshift 2>/dev/null
 
 aws iam create-access-key --user-name route53-openshift --output json | tee -a secretos-iam-user-route53-openshift
 
@@ -70,20 +71,21 @@ oc create secret generic route53-credentials-secrets --from-literal secret-acces
 #exit 
 
 cat clusterissuer-letsencrypt.yaml | \
-  CLUSTER_DOMAIN=$(oc get dns.config/cluster -o jsonpath='{.spec.baseDomain}') envsubst | oc apply -f -
+  CLUSTER_DOMAIN=$(oc get dns.config/cluster -o jsonpath='{.spec.baseDomain}' ) envsubst | oc apply -f -
 
 
-sleep 10
+sleep 30
 
 cat certificate-ocp-ingress.yaml | \
-  CLUSTER_DOMAIN=$(oc get dns.config/cluster -o jsonpath='{.spec.baseDomain}') envsubst | oc apply -f -
+  CLUSTER_DOMAIN=$(oc get dns.config/cluster -o jsonpath='{.spec.baseDomain}' ) envsubst | oc apply -f -
 
+echo "waiting 200secs"
 sleep 200
 
 echo "oc get pod -n openshift-ingress\n"
 oc get pod -n openshift-ingress
 
-echo "oc patch ingresscontroller default -n openshift-ingress-operator --type=merge --patch='{"spec": { "defaultCertificate": {"name": "ingress-cert-secret" }}}'\n"
+echo "oc patch ingresscontroller default -n openshift-ingress-operator --type=merge --patch='{"spec": { "defaultCertificate": {"name": "ingress-cert-secret" }}}' \n"
 oc patch ingresscontroller default -n openshift-ingress-operator --type=merge --patch='{"spec": { "defaultCertificate": {"name": "ingress-cert-secret" }}}'
 
 sleep 30
@@ -91,17 +93,25 @@ sleep 30
 echo "oc get pod -n openshift-ingress\n"
 oc get pod -n openshift-ingress
 
+#exit 
+
 echo
 oc get apiserver cluster -oyaml
 
 cat certificate-ocp-apiserver.yaml | \
-  CLUSTER_DOMAIN=$(oc get dns.config/cluster -o jsonpath='{.spec.baseDomain}') envsubst | oc apply -f -
+  CLUSTER_DOMAIN=$(oc get dns.config/cluster -o jsonpath='{.spec.baseDomain}' ) envsubst | oc apply -f -
 
 echo "Patching the OpenShift API URL server  with the new certificate"
 echo "oc patch apiserver cluster --type=merge --patch='{"spec": {"servingCerts": {"namedCertificates": [{"names":["api.$CLUSTER_DOMAIN"], "servingCertificate": {"name": "api-cert-secret"}}]}}}'\n"
-oc patch apiserver cluster --type=merge --patch='{"spec": {"servingCerts": {"namedCertificates": [{"names":["api.$CLUSTER_DOMAIN"], "servingCertificate": {"name": "api-cert-secret"}}]}}}' 
+oc patch apiserver cluster --type=merge --patch='{"spec": {"servingCerts": {"namedCertificates": [{"names":["api.$CLUSTER_DOMAIN"], "servingCertificate": {"name": "api-cert-secret"}}]}}}'
 
-echo "waiting 300secs"
+echo "waiting 600secs"
 sleep 600
+
+echo "comprobando emisor de certificados de ingresscontroller/default "
+openssl s_client -showcerts -servername console-openshift-console.apps.$CLUSTER_DOMAIN -connect console-openshift-console.apps.$CLUSTER_DOMAIN:443 </dev/null | grep Issuer
+echo "\n\n"
+echo "comprobando emisor de certificados de apiserver/cluster "
+openssl s_client -showcerts -servername api.$CLUSTER_DOMAIN -connect api.$CLUSTER_DOMAIN:6443 </dev/null | grep Issuer
 
 exit

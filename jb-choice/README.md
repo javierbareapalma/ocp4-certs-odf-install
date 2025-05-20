@@ -3,6 +3,8 @@
 ```bash
 oc apply -f operator-cert-manager-declaration.yaml
 
+sleep 5
+
 oc apply -k cert-manager-monitoring
 ```
 

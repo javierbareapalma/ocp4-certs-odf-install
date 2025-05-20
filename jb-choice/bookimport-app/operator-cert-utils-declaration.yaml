@@ -6,12 +6,12 @@ metadata:
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
-  name: cert-utils-operator.cert-utils-operator
+  name: cert-utils-operator
   namespace: cert-utils-operator
-spec:  
+spec:
   upgradeStrategy: Default
-  targetNamespaces:
-    - cert-utils-operator
+  #targetNamespaces:
+    #- ""
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -23,6 +23,8 @@ metadata:
 spec:
   channel: alpha
   installPlanApproval: Automatic
+  #this below is package name: cert-utils-operator
   name: cert-utils-operator
   source: community-operators
   sourceNamespace: openshift-marketplace
+  #startingCSV: cert-utils-operator.v1.3.12

@@ -6,32 +6,13 @@ running on the public cloud or your local infrastructure.
 To learn more about installing OpenShift, visit [docs.openshift.com](https://docs.openshift.com)
 and select the version of OpenShift you are using.
 
-## Installing OCP cluster
+## Installing the tools
 
-To install an OCP cluster (IPI) on AWS, just run:
+After extracting this archive, you can move the `openshift-install` binary
+to a location on your PATH such as `/usr/local/bin`, or keep it in a temporary
+directory and reference it via `./openshift-install`.
 
-1. If you want to install the latest version of OCP:
-```
-./ocp4-install.sh
-```
+## License
 
-Then, introduce the data that the installer will ask during the execution.
-
-2. If you want to install a specific version of OCP:
-```
-./ocp4-install.sh 4.6
-```
-
-Then, introduce the data that the installer will ask during the execution.
-
-## Installing ODF
-
-After OCP gets installed, label the worker nodes as follows:
-
-```
-oc label node <NodeName> cluster.ocs.openshift.io/openshift-storage=''
-```
-
-You will need to add the ODF label to each OCP node that has storage devices used to create the ODF storage cluster. The ODF operator looks for this label to know which nodes can be scheduling targets for ODF components. You must have a minimum of three labeled nodes with the same number of devices or disks with similar performance capability. 
-
-Now, install ODF as a whole..
+OpenShift is licensed under the Apache Public License 2.0. The source code for this
+program is [located on github](https://github.com/openshift/installer).
